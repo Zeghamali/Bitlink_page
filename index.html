@@ -1,0 +1,1661 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitlink – Unify WhatsApp/Telegram/Discord into Slack</title>
+    <meta name="description"
+        content="Bridge WhatsApp, Telegram, and Discord into Slack with two-way, real-time communication. Unify all client chats in one place without forcing clients to switch apps.">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Bitlink – Unify WhatsApp/Telegram/Discord into Slack">
+    <meta property="og:description"
+        content="Bridge WhatsApp, Telegram, and Discord into Slack with two-way, real-time communication. Unify all client chats in one place.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://bitlink.bitbash.dev">
+    <meta property="og:site_name" content="Bitlink by BitBash">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Bitlink – Unify WhatsApp/Telegram/Discord into Slack">
+    <meta name="twitter:description"
+        content="Bridge WhatsApp, Telegram, and Discord into Slack with two-way, real-time communication.">
+
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --color-primary: #1e293b;
+            --color-primary-light: #334155;
+            --color-accent: #7c3aed;
+            --color-accent-light: #a855f7;
+            --color-text: #1f2937;
+            --color-text-light: #6b7280;
+            --color-bg: #ffffff;
+            --color-bg-light: #f8fafc;
+            --color-border: #e5e7eb;
+            --color-success: #10b981;
+            --color-error: #ef4444;
+            --color-warning: #f59e0b;
+
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+            --gradient-primary: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+            --gradient-soft: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        }
+
+        [data-theme="dark"] {
+            --color-primary: #e2e8f0;
+            --color-primary-light: #cbd5e1;
+            --color-accent: #a855f7;
+            --color-accent-light: #c084fc;
+            --color-text: #f1f5f9;
+            --color-text-light: #94a3b8;
+            --color-bg: #0f172a;
+            --color-bg-light: #1e293b;
+            --color-border: #334155;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--color-text);
+            background-color: var(--color-bg);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .container-wide {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        /* Header */
+        header {
+            position: sticky;
+            top: 0;
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--color-border);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        [data-theme="dark"] header {
+            background-color: rgba(15, 23, 42, 0.95);
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--color-primary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .logo:hover {
+            color: var(--color-accent);
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: var(--color-text);
+            font-weight: 500;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+
+        nav a:hover {
+            color: var(--color-accent);
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background: var(--gradient-primary);
+            transition: width 0.3s ease;
+        }
+
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        .cta-header {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 2rem;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-md);
+        }
+
+        .cta-header:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+            color: white;
+        }
+
+        .dark-toggle {
+            background: none;
+            border: 2px solid var(--color-border);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            margin-left: 1rem;
+        }
+
+        .dark-toggle:hover {
+            border-color: var(--color-accent);
+            background-color: var(--color-bg-light);
+        }
+
+        /* Mobile menu */
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--color-text);
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 8rem 0 6rem;
+            background: var(--gradient-soft);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(124, 58, 237, 0.1) 0%, transparent 70%);
+            z-index: -1;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 700;
+            color: var(--color-primary);
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+
+        .hero .subhead {
+            font-size: clamp(1.1rem, 2.5vw, 1.3rem);
+            color: var(--color-text-light);
+            margin-bottom: 3rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 4rem;
+        }
+
+        .cta-primary,
+        .cta-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 2rem;
+            border-radius: 3rem;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-md);
+        }
+
+        .cta-primary {
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        .cta-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-xl);
+            color: white;
+        }
+
+        .cta-secondary {
+            background: var(--color-bg);
+            color: var(--color-text);
+            border: 2px solid var(--color-border);
+        }
+
+        .cta-secondary:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-xl);
+            border-color: var(--color-accent);
+            color: var(--color-accent);
+        }
+
+        .hero-visual {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Section styles */
+        section {
+            padding: 5rem 0;
+        }
+
+        .section-title {
+            font-size: clamp(2rem, 4vw, 2.5rem);
+            font-weight: 700;
+            color: var(--color-primary);
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .section-subtitle {
+            color: var(--color-text-light);
+            text-align: center;
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto 3rem;
+        }
+
+        /* Problem section */
+        .problem {
+            background-color: var(--color-bg-light);
+        }
+
+        .problem-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .problem-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .problem-icon {
+            width: 24px;
+            height: 24px;
+            color: var(--color-error);
+            flex-shrink: 0;
+            margin-top: 0.25rem;
+        }
+
+        /* Features grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: var(--color-bg);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--color-border);
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--gradient-primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            color: white;
+        }
+
+        .feature-card h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--color-primary);
+            margin-bottom: 1rem;
+        }
+
+        /* How it works */
+        .how-it-works {
+            background-color: var(--color-bg-light);
+        }
+
+        .flow-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
+            margin-bottom: 4rem;
+        }
+
+        .flow-card {
+            background: var(--color-bg);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: var(--shadow-md);
+            border-left: 4px solid var(--color-accent);
+        }
+
+        .flow-card h3 {
+            color: var(--color-primary);
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .flow-steps {
+            list-style: none;
+            counter-reset: step-counter;
+        }
+
+        .flow-steps li {
+            counter-increment: step-counter;
+            margin-bottom: 0.5rem;
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .flow-steps li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 1.5rem;
+            height: 1.5rem;
+            background: var(--color-accent);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .architecture-diagram {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--color-bg);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Demo section */
+        .demo-container {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .demo-video {
+            width: 100%;
+            max-width: 700px;
+            aspect-ratio: 16/9;
+            background: var(--color-bg-light);
+            border-radius: 1rem;
+            border: 1px solid var(--color-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 2rem auto;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .demo-placeholder {
+            text-align: center;
+            color: var(--color-text-light);
+        }
+
+        .play-button {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .play-button:hover {
+            transform: scale(1.1);
+        }
+
+        /* FAQ */
+        .faq {
+            background-color: var(--color-bg-light);
+        }
+
+        .faq-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            background: var(--color-bg);
+            border-radius: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--color-border);
+            overflow: hidden;
+        }
+
+        .faq-question {
+            width: 100%;
+            background: none;
+            border: none;
+            padding: 1.5rem;
+            text-align: left;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--color-primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .faq-question:hover {
+            background-color: var(--color-bg-light);
+        }
+
+        .faq-answer {
+            padding: 0 1.5rem 1.5rem;
+            color: var(--color-text-light);
+            line-height: 1.7;
+            display: none;
+        }
+
+        .faq-item.active .faq-answer {
+            display: block;
+        }
+
+        .faq-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .faq-item.active .faq-icon {
+            transform: rotate(180deg);
+        }
+
+        /* About */
+        .about {
+            text-align: center;
+        }
+
+        .about-content {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .about p {
+            font-size: 1.1rem;
+            color: var(--color-text-light);
+            margin-bottom: 2rem;
+            line-height: 1.8;
+        }
+
+        .about-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--color-accent);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .about-link:hover {
+            color: var(--color-accent-light);
+        }
+
+        /* Contact */
+        .contact {
+            background-color: var(--color-bg-light);
+        }
+
+        .contact-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .contact-form {
+            background: var(--color-bg);
+            padding: 3rem;
+            border-radius: 1rem;
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 3rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: var(--color-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--color-border);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--color-accent);
+        }
+
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-submit {
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 3rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-md);
+            width: 100%;
+        }
+
+        .form-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .contact-options {
+            text-align: center;
+        }
+
+        .contact-options h3 {
+            color: var(--color-primary);
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+        }
+
+        .contact-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .contact-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: var(--color-bg);
+            padding: 1rem 1.5rem;
+            border-radius: 1rem;
+            text-decoration: none;
+            color: var(--color-text);
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--color-border);
+        }
+
+        .contact-link:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+            color: var(--color-accent);
+            border-color: var(--color-accent);
+        }
+
+        .contact-icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--color-primary);
+            color: white;
+            padding: 3rem 0 2rem;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h4 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: white;
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--color-accent-light);
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .social-link {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .social-link:hover {
+            background: var(--color-accent);
+            transform: translateY(-2px);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            padding-top: 2rem;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+
+            .container,
+            .container-wide {
+                padding: 0 1rem;
+            }
+
+            .header-content {
+                padding: 0.75rem 0;
+            }
+
+            nav {
+                display: none;
+            }
+
+            .mobile-menu-toggle {
+                display: block;
+            }
+
+            .hero {
+                padding: 6rem 0 4rem;
+            }
+
+            section {
+                padding: 3rem 0;
+            }
+
+            .cta-group {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .cta-primary,
+            .cta-secondary {
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+            }
+
+            .contact-form {
+                padding: 2rem 1.5rem;
+            }
+
+            .contact-links {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .contact-link {
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+            }
+        }
+
+        /* Accessibility improvements */
+        @media (prefers-reduced-motion: reduce) {
+            html {
+                scroll-behavior: auto;
+            }
+
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* Focus styles for accessibility */
+        *:focus {
+            outline: 2px solid var(--color-accent);
+            outline-offset: 2px;
+        }
+
+        button:focus,
+        a:focus,
+        input:focus,
+        textarea:focus {
+            outline: 2px solid var(--color-accent);
+            outline-offset: 2px;
+        }
+
+        /* Match hero and footer bg to other sections in dark mode */
+        [data-theme="dark"] .hero {
+            background: var(--color-bg) !important;
+        }
+
+        [data-theme="dark"] footer {
+            background-color: var(--color-bg) !important;
+            color: var(--color-text) !important;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- JSON-LD structured data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "BitBash",
+        "url": "https://www.bitbash.dev/",
+        "description": "BitBash builds practical, high-impact software and automation solutions.",
+        "products": {
+            "@type": "SoftwareApplication",
+            "name": "Bitlink",
+            "description": "Multi-Platform Client Communication Hub - Bridge WhatsApp, Telegram, and Discord into Slack with two-way, real-time communication.",
+            "applicationCategory": "CommunicationApplication",
+            "operatingSystem": "Web-based"
+        }
+    }
+    </script>
+
+    <header role="banner">
+        <div class="container">
+            <div class="header-content">
+                <a href="#home" class="logo" aria-label="Bitlink home">Bitlink</a>
+
+                <nav role="navigation" aria-label="Main navigation">
+                    <ul>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#how-it-works">How It Works</a></li>
+                        <li><a href="#demo">Demo</a></li>
+                        <li><a href="#faq">FAQ</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                        <li><a href="#contact" class="cta-header">Book a 15-min Discovery Call</a></li>
+                    </ul>
+                </nav>
+
+                <div style="display: flex; align-items: center;">
+                    <button class="dark-toggle" onclick="toggleDarkMode()" aria-label="Toggle dark mode">
+                        🌙
+                    </button>
+                    <button class="mobile-menu-toggle" aria-label="Toggle mobile menu">
+                        ☰
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section id="home" class="hero">
+            <div class="container">
+                <h1>All your client chats, unified in Slack.</h1>
+                <p class="subhead">Bridge WhatsApp, Telegram, and Discord into Slack—two-way, real-time, and fully
+                    searchable.</p>
+
+                <div class="cta-group">
+                    <a href="#demo" class="cta-primary">
+                        <span>▶</span>
+                        See a 30-sec Demo
+                    </a>
+                    <a href="#contact" class="cta-secondary">
+                        Get Started
+                        <span>→</span>
+                    </a>
+                </div>
+
+                <div class="hero-visual">
+                    <svg viewBox="0 0 800 400" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
+                        aria-labelledby="hero-diagram-title">
+                        <title id="hero-diagram-title">Bitlink connecting WhatsApp, Telegram, and Discord to Slack with
+                            bi-directional arrows</title>
+
+                        <!-- Platform icons on the left -->
+                        <g id="platforms">
+                            <!-- WhatsApp -->
+                            <circle cx="100" cy="100" r="30" fill="#25D366" />
+                            <text x="100" y="105" text-anchor="middle" fill="white" font-size="12"
+                                font-weight="bold">WA</text>
+                            <text x="100" y="150" text-anchor="middle" fill="#6b7280" font-size="14">WhatsApp</text>
+
+                            <!-- Telegram -->
+                            <circle cx="100" cy="200" r="30" fill="#0088CC" />
+                            <text x="100" y="205" text-anchor="middle" fill="white" font-size="12"
+                                font-weight="bold">TG</text>
+                            <text x="100" y="250" text-anchor="middle" fill="#6b7280" font-size="14">Telegram</text>
+
+                            <!-- Discord -->
+                            <circle cx="100" cy="300" r="30" fill="#7289DA" />
+                            <text x="100" y="305" text-anchor="middle" fill="white" font-size="12"
+                                font-weight="bold">DC</text>
+                            <text x="100" y="350" text-anchor="middle" fill="#6b7280" font-size="14">Discord</text>
+                        </g>
+
+                        <!-- Bitlink Hub in center -->
+                        <g id="hub">
+                            <rect x="300" y="150" width="200" height="100" rx="20" fill="url(#gradient1)" />
+                            <text x="400" y="190" text-anchor="middle" fill="white" font-size="16"
+                                font-weight="bold">Bitlink</text>
+                            <text x="400" y="210" text-anchor="middle" fill="white" font-size="12">Router + DB</text>
+                            <text x="400" y="230" text-anchor="middle" fill="rgba(255,255,255,0.8)"
+                                font-size="10">dedupe, mapping</text>
+                        </g>
+
+                        <!-- Slack on the right -->
+                        <g id="slack">
+                            <rect x="620" y="120" width="80" height="160" rx="15" fill="#4A154B" />
+                            <text x="660" y="145" text-anchor="middle" fill="white" font-size="14"
+                                font-weight="bold">Slack</text>
+                            <text x="660" y="165" text-anchor="middle" fill="rgba(255,255,255,0.8)"
+                                font-size="10">Workspace</text>
+
+                            <!-- Channel representations -->
+                            <rect x="630" y="180" width="60" height="12" rx="2" fill="rgba(255,255,255,0.3)" />
+                            <text x="660" y="188" text-anchor="middle" fill="white" font-size="8">#client-a</text>
+                            <rect x="630" y="200" width="60" height="12" rx="2" fill="rgba(255,255,255,0.3)" />
+                            <text x="660" y="208" text-anchor="middle" fill="white" font-size="8">#client-b</text>
+                            <rect x="630" y="220" width="60" height="12" rx="2" fill="rgba(255,255,255,0.3)" />
+                            <text x="660" y="228" text-anchor="middle" fill="white" font-size="8">#client-c</text>
+                        </g>
+
+                        <!-- Bidirectional arrows -->
+                        <g id="arrows" stroke="#7c3aed" stroke-width="3" fill="#7c3aed">
+                            <!-- Left to center arrows -->
+                            <path d="M140 100 L290 180" marker-end="url(#arrowhead)" />
+                            <path d="M140 200 L290 200" marker-end="url(#arrowhead)" />
+                            <path d="M140 300 L290 220" marker-end="url(#arrowhead)" />
+
+                            <!-- Center to right arrow -->
+                            <path d="M510 200 L610 200" marker-end="url(#arrowhead)" />
+
+                            <!-- Return arrows (dashed) -->
+                            <path d="M280 190 L150 110" stroke-dasharray="5,5" marker-end="url(#arrowhead)" />
+                            <path d="M280 210 L150 210" stroke-dasharray="5,5" marker-end="url(#arrowhead)" />
+                            <path d="M280 230 L150 310" stroke-dasharray="5,5" marker-end="url(#arrowhead)" />
+                            <path d="M600 210 L520 210" stroke-dasharray="5,5" marker-end="url(#arrowhead)" />
+                        </g>
+
+                        <!-- Gradient definition -->
+                        <defs>
+                            <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#7c3aed" />
+                                <stop offset="100%" style="stop-color:#a855f7" />
+                            </linearGradient>
+                            <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#7c3aed" />
+                            </marker>
+                        </defs>
+                    </svg>
+                </div>
+            </div>
+        </section>
+
+        <section id="problem" class="problem">
+            <div class="container">
+                <h2 class="section-title">The Problem</h2>
+                <p class="section-subtitle">Your clients live across different apps. Your team lives in Slack. Bitlink
+                    keeps both happy—no switching, no lost context.</p>
+
+                <div class="problem-grid">
+                    <div class="problem-item">
+                        <svg class="problem-icon" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM13 17h-2v-6h2v6zm0-8h-2V7h2v2z" />
+                        </svg>
+                        <div>
+                            <h3>Fragmented Conversations</h3>
+                            <p>Client messages scattered across WhatsApp, Telegram, and Discord while your team operates
+                                in Slack.</p>
+                        </div>
+                    </div>
+
+                    <div class="problem-item">
+                        <svg class="problem-icon" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                        </svg>
+                        <div>
+                            <h3>Lost Context</h3>
+                            <p>Important client discussions buried in different platforms, making follow-ups and
+                                handoffs difficult.</p>
+                        </div>
+                    </div>
+
+                    <div class="problem-item">
+                        <svg class="problem-icon" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
+                        </svg>
+                        <div>
+                            <h3>Duplicated Efforts</h3>
+                            <p>Team members switching between apps, repeating updates, and missing important client
+                                messages.</p>
+                        </div>
+                    </div>
+
+                    <div class="problem-item">
+                        <svg class="problem-icon" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z" />
+                            <path d="m15.5 11-3 3-1.5-1.5" />
+                        </svg>
+                        <div>
+                            <h3>Slow Response Times</h3>
+                            <p>Delayed responses due to constant app-switching and missed notifications across
+                                platforms.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="features">
+            <div class="container">
+                <h2 class="section-title">The Solution</h2>
+                <p class="section-subtitle">Two-way, real-time mirroring between client apps and Slack. Reply once in
+                    Slack; Bitlink delivers it back on the client's original app.</p>
+
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <svg fill="currentColor" viewBox="0 0 24 24" width="24" height="24">
+                                <path d="M7 7h10v2H7zm0 4h10v2H7zm0 4h7v2H7z" />
+                                <path
+                                    d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4l4 4 4-4h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
+                            </svg>
+                        </div>
+                        <h3>Two-Way Sync</h3>
+                        <p>Messages flow seamlessly in both directions. Clients send from their preferred app, you reply
+                            from Slack—they receive it on their platform.</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <svg fill="currentColor" viewBox="0 0 24 24" width="24" height="24">
+                                <path
+                                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                            </svg>
+                        </div>
+                        <h3>Real-Time Streaming</h3>
+                        <p>Near-instantaneous message delivery with sub-100ms latency. Your conversations flow naturally
+                            without delays.</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <svg fill="currentColor" viewBox="0 0 24 24" width="24" height="24">
+                                <path
+                                    d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                            </svg>
+                        </div>
+                        <h3>Stay in Slack</h3>
+                        <p>Your team never leaves Slack. All client communications appear in dedicated channels with
+                            full context and history.</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <svg fill="currentColor" viewBox="0 0 24 24" width="24" height="24">
+                                <path
+                                    d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z" />
+                            </svg>
+                        </div>
+                        <h3>Scalable & Isolated</h3>
+                        <p>Each client gets their own channel (e.g., #client-company-dm). Easily add new platforms via
+                            our adapter architecture.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="how-it-works" class="how-it-works">
+            <div class="container">
+                <h2 class="section-title">How It Works</h2>
+                <p class="section-subtitle">Simple, reliable, and transparent communication bridging</p>
+
+                <div class="flow-container">
+                    <div class="flow-card">
+                        <h3>📥 Inbound (Client → Slack)</h3>
+                        <ol class="flow-steps">
+                            <li>Listen for messages on WhatsApp, Telegram, Discord</li>
+                            <li>Capture message IDs and content</li>
+                            <li>Deduplicate and store in database</li>
+                            <li>Route to mapped Slack channel</li>
+                        </ol>
+                    </div>
+
+                    <div class="flow-card">
+                        <h3>📤 Outbound (Slack → Client)</h3>
+                        <ol class="flow-steps">
+                            <li>Listen in mapped Slack channel</li>
+                            <li>Identify target client and platform</li>
+                            <li>Format for destination platform</li>
+                            <li>Deliver reply back to client</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="architecture-diagram">
+                    <svg viewBox="0 0 900 300" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
+                        aria-labelledby="arch-diagram-title">
+                        <title id="arch-diagram-title">Bitlink architecture showing platforms connecting through router
+                            and database to Slack workspace</title>
+
+                        <!-- Left side - Client Platforms -->
+                        <g id="client-platforms">
+                            <text x="50" y="30" font-size="16" font-weight="bold" fill="#374151">Client Platforms</text>
+
+                            <!-- WhatsApp -->
+                            <rect x="20" y="60" width="100" height="40" rx="8" fill="#25D366" />
+                            <text x="70" y="85" text-anchor="middle" fill="white" font-weight="bold">WhatsApp</text>
+
+                            <!-- Telegram -->
+                            <rect x="20" y="120" width="100" height="40" rx="8" fill="#0088CC" />
+                            <text x="70" y="145" text-anchor="middle" fill="white" font-weight="bold">Telegram</text>
+
+                            <!-- Discord -->
+                            <rect x="20" y="180" width="100" height="40" rx="8" fill="#7289DA" />
+                            <text x="70" y="205" text-anchor="middle" fill="white" font-weight="bold">Discord</text>
+                        </g>
+
+                        <!-- Center - Bitlink System -->
+                        <g id="bitlink-system">
+                            <text x="450" y="30" text-anchor="middle" font-size="16" font-weight="bold"
+                                fill="#374151">Bitlink System</text>
+
+                            <!-- Router -->
+                            <rect x="350" y="80" width="120" height="60" rx="12" fill="url(#centerGradient)" />
+                            <text x="410" y="105" text-anchor="middle" fill="white" font-weight="bold">Router</text>
+                            <text x="410" y="125" text-anchor="middle" fill="rgba(255,255,255,0.9)" font-size="12">API
+                                Handlers</text>
+
+                            <!-- Database -->
+                            <rect x="350" y="160" width="120" height="60" rx="12" fill="#6b7280" />
+                            <text x="410" y="185" text-anchor="middle" fill="white" font-weight="bold">Database</text>
+                            <text x="410" y="205" text-anchor="middle" fill="rgba(255,255,255,0.9)"
+                                font-size="12">Dedupe & Mapping</text>
+                        </g>
+
+                        <!-- Right side - Slack Workspace -->
+                        <g id="slack-workspace">
+                            <text x="750" y="30" font-size="16" font-weight="bold" fill="#374151">Slack Workspace</text>
+
+                            <rect x="700" y="60" width="150" height="160" rx="12" fill="#4A154B" />
+                            <text x="775" y="90" text-anchor="middle" fill="white" font-weight="bold"
+                                font-size="14">Slack Channels</text>
+
+                            <!-- Individual channels -->
+                            <rect x="720" y="110" width="110" height="25" rx="4" fill="rgba(255,255,255,0.2)" />
+                            <text x="775" y="127" text-anchor="middle" fill="white" font-size="11">#
+                                client-acme-dm</text>
+
+                            <rect x="720" y="145" width="110" height="25" rx="4" fill="rgba(255,255,255,0.2)" />
+                            <text x="775" y="162" text-anchor="middle" fill="white" font-size="11">#
+                                client-beta-dm</text>
+
+                            <rect x="720" y="180" width="110" height="25" rx="4" fill="rgba(255,255,255,0.2)" />
+                            <text x="775" y="197" text-anchor="middle" fill="white" font-size="11">#
+                                client-gamma-dm</text>
+                        </g>
+
+                        <!-- Connection arrows -->
+                        <g stroke="#7c3aed" stroke-width="2" fill="none">
+                            <!-- Client platforms to router -->
+                            <path d="M130 80 L340 110" marker-end="url(#archArrow)" />
+                            <path d="M130 140 L340 110" marker-end="url(#archArrow)" />
+                            <path d="M130 200 L340 110" marker-end="url(#archArrow)" />
+
+                            <!-- Router to Slack -->
+                            <path d="M480 110 L690 140" marker-end="url(#archArrow)" />
+
+                            <!-- Return paths (dashed) -->
+                            <path d="M690 160 L480 130" stroke-dasharray="4,4" marker-end="url(#archArrow)" />
+                            <path d="M340 130 L140 90" stroke-dasharray="4,4" marker-end="url(#archArrow)" />
+                            <path d="M340 130 L140 150" stroke-dasharray="4,4" marker-end="url(#archArrow)" />
+                            <path d="M340 130 L140 210" stroke-dasharray="4,4" marker-end="url(#archArrow)" />
+                        </g>
+
+                        <!-- Connection between router and database -->
+                        <g stroke="#9ca3af" stroke-width="2" fill="none">
+                            <path d="M410 140 L410 160" />
+                            <path d="M405 155 L415 155" />
+                        </g>
+
+                        <defs>
+                            <linearGradient id="centerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#7c3aed" />
+                                <stop offset="100%" style="stop-color:#a855f7" />
+                            </linearGradient>
+                            <marker id="archArrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                                <polygon points="0 0, 8 3, 0 6" fill="#7c3aed" />
+                            </marker>
+                        </defs>
+                    </svg>
+                </div>
+            </div>
+        </section>
+
+        <!-- <section id="demo" class="demo">
+            <div class="container">
+                <div class="demo-container">
+                    <h2 class="section-title">See Bitlink in Action</h2>
+                    <p class="section-subtitle">Watch how seamlessly client messages flow into Slack and replies go back to the original platform</p>
+                    
+                    <div class="demo-video">
+                        <div class="demo-placeholder">
+                            <div class="play-button" onclick="playDemo()">
+                                ▶
+                            </div>
+                            <p style="margin-top: 6rem;">Demo Video Placeholder</p>
+                            <p style="font-size: 0.9rem; margin-top: 1rem;">Replace with your demo.mp4 or Loom embed</p>
+                        </div>
+                    </div>
+                    
+                    <p style="color: var(--color-text-light); font-style: italic; text-align: center;">
+                        Client DM → Mirrored in Slack → Reply from Slack → Delivered back (&lt;100ms E2E depends on platform)
+                    </p>
+                </div>
+            </div>
+        </section> -->
+
+        <!-- ...existing code... -->
+        <section id="demo" class="demo">
+            <div class="container">
+                <div class="demo-container">
+                    <h2 class="section-title">See Bitlink in Action</h2>
+                    <p class="section-subtitle">Watch how seamlessly client messages flow into Slack and replies go back
+                        to the original platform</p>
+
+                    <div class="demo-video">
+                        <video id="bitlink-demo-video" width="100%" height="100%"
+                            style="border-radius: 1rem; outline: none; background: #000;" controls>
+                            <source src="demo.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+
+                    <p style="color: var(--color-text-light); font-style: italic; text-align: center;">
+                        Client DM → Mirrored in Slack → Reply from Slack → Delivered back (&lt;100ms E2E depends on
+                        platform)
+                    </p>
+                </div>
+            </div>
+        </section>
+        <!-- ...existing code... -->
+
+        <section id="faq" class="faq">
+            <div class="container">
+                <div class="faq-container">
+                    <h2 class="section-title">Frequently Asked Questions</h2>
+
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            Do clients need to switch to a new app?
+                            <span class="faq-icon">▼</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p><strong>No.</strong> Clients continue using WhatsApp, Telegram, or Discord exactly as
+                                before. They don't even know Bitlink exists—it's completely transparent to them.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            Can we reply directly from Slack?
+                            <span class="faq-icon">▼</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p><strong>Yes.</strong> Just type your reply in the client's dedicated Slack channel (e.g.,
+                                #client-acme-dm) and Bitlink automatically delivers it back to them on their original
+                                platform.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            Is it really real-time?
+                            <span class="faq-icon">▼</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p><strong>Near real-time.</strong> Message delivery typically takes less than 100ms, though
+                                this depends on the source platform's API speed. Most conversations feel instant.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            What about duplicate messages?
+                            <span class="faq-icon">▼</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p><strong>Handled automatically.</strong> Bitlink deduplicates messages before forwarding
+                                them to Slack, so you'll never see the same message twice even if there are delivery
+                                retries.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            Can we add more platforms later?
+                            <span class="faq-icon">▼</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p><strong>Yes.</strong> Bitlink uses an adapter-based architecture. Adding support for new
+                                platforms (like SMS, email, or emerging chat apps) is straightforward and doesn't
+                                disrupt existing integrations.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            How secure is the message handling?
+                            <span class="faq-icon">▼</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p>All messages are encrypted in transit and at rest. We only store the minimum metadata
+                                needed for deduplication and routing. Your client conversations remain private and
+                                secure.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            What if Slack is down?
+                            <span class="faq-icon">▼</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p>Bitlink queues incoming messages during outages and delivers them once Slack is back
+                                online. Your clients can still reach you, and no messages are lost.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="about" class="about">
+            <div class="container">
+                <div class="about-content">
+                    <h2 class="section-title">About BitBash</h2>
+                    <p>BitBash builds practical, high-impact software and automation solutions for teams that ship. We
+                        focus on solving real workflow problems with elegant, reliable technology that just works.</p>
+                    <a href="https://www.bitbash.dev/" target="_blank" rel="noopener noreferrer" class="about-link">
+                        Learn more at bitbash.dev
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact" class="contact">
+            <div class="container">
+                <div class="contact-container">
+                    <h2 class="section-title">Get Started with Bitlink</h2>
+                    <p class="section-subtitle">Ready to unify your client communications? Let's talk about your
+                        specific needs.</p>
+
+                    <form class="contact-form" onsubmit="handleFormSubmit(event)">
+                        <div class="form-group">
+                            <label for="name">Name *</label>
+                            <input type="text" id="name" name="name" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Work Email *</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="company">Company</label>
+                            <input type="text" id="company" name="company">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="usecase">Tell us about your use case</label>
+                            <textarea id="usecase" name="usecase"
+                                placeholder="Which platforms do your clients use? How many client conversations do you handle weekly? Any specific requirements?"></textarea>
+                        </div>
+
+                        <button type="submit" class="form-submit">Book a 15-min Discovery Call</button>
+                    </form>
+
+                    <div class="contact-options">
+                        <h3>Or reach out directly:</h3>
+                        <div class="contact-links">
+                            <a href="https://discord.gg/vBu9huKBvy" target="_blank" rel="noopener noreferrer"
+                                class="contact-link">
+                                <svg class="contact-icon" viewBox="0 0 24 24" fill="currentColor">
+                                    <path
+                                        d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z" />
+                                </svg>
+                                Discord: Appilot
+                            </a>
+
+                            <a href="https://t.me/devpilot1" target="_blank" rel="noopener noreferrer"
+                                class="contact-link">
+                                <svg class="contact-icon" viewBox="0 0 24 24" fill="currentColor">
+                                    <path
+                                        d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
+                                </svg>
+                                Telegram: @devpilot1
+                            </a>
+
+                            <a href="https://github.com/zeeshanahmad-dev" target="_blank" rel="noopener noreferrer"
+                                class="contact-link">
+                                <svg class="contact-icon" viewBox="0 0 24 24" fill="currentColor">
+                                    <path
+                                        d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+                                </svg>
+                                GitHub Profile
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer role="contentinfo">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Bitlink by BitBash</h4>
+                    <p style="color: rgba(255, 255, 255, 0.8); margin-top: 0.5rem;">
+                        Unifying client communications across platforms
+                    </p>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul class="footer-links">
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#demo">Demo</a></li>
+                        <li><a href="#faq">FAQ</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Connect</h4>
+                    <div class="social-links">
+                        <a href="https://github.com/zeeshanahmad-dev" target="_blank" rel="noopener noreferrer"
+                            class="social-link" aria-label="GitHub">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+                            </svg>
+                        </a>
+                        <a href="https://discord.gg/vBu9huKBvy" target="_blank" rel="noopener noreferrer"
+                            class="social-link" aria-label="Discord">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z" />
+                            </svg>
+                        </a>
+                        <a href="https://t.me/devpilot1" target="_blank" rel="noopener noreferrer" class="social-link"
+                            aria-label="Telegram">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>Bitlink by BitBash © <span id="current-year">2025</span></p>
+                <p style="margin-top: 0.5rem; font-size: 0.8rem;">
+                    Slack, WhatsApp, Telegram, and Discord are trademarks of their respective owners.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Set current year
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+
+        // Dark mode toggle
+        function toggleDarkMode() {
+            const body = document.body;
+            const isDark = body.getAttribute('data-theme') === 'dark';
+            body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+            localStorage.setItem('theme', isDark ? 'light' : 'dark');
+        }
+
+        // Load saved theme
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            document.body.setAttribute('data-theme', savedTheme);
+        } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.body.setAttribute('data-theme', 'dark');
+        }
+
+        // FAQ toggle
+        function toggleFaq(button) {
+            const item = button.parentElement;
+            const allItems = document.querySelectorAll('.faq-item');
+
+            // Close all other items
+            allItems.forEach(otherItem => {
+                if (otherItem !== item) {
+                    otherItem.classList.remove('active');
+                }
+            });
+
+            // Toggle current item
+            item.classList.toggle('active');
+        }
+
+        // Demo play button
+        function playDemo() {
+            alert('Replace this with your actual demo video or Loom embed! Update the demo section HTML with your video URL.');
+        }
+
+        // Form submission
+        function handleFormSubmit(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+
+            // Create mailto link with form data
+            const name = formData.get('name');
+            const email = formData.get('email');
+            const company = formData.get('company');
+            const usecase = formData.get('usecase');
+
+            const subject = 'Bitlink Discovery Call Request';
+            const body = `Hi there,
+
+I'd like to schedule a 15-minute discovery call to discuss Bitlink for our team.
+
+Name: ${name}
+Company: ${company || 'Not specified'}
+Email: ${email}
+
+Use case:
+${usecase || 'Not specified'}
+
+Looking forward to hearing from you!
+
+Best regards,
+${name}`;
+
+            const mailtoLink = `mailto:hello@bitbash.dev?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            window.location.href = mailtoLink;
+        }
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Header scroll effect
+        let lastScrollTop = 0;
+        const header = document.querySelector('header');
+
+        window.addEventListener('scroll', () => {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+            if (scrollTop > lastScrollTop && scrollTop > 100) {
+                // Scrolling down
+                header.style.transform = 'translateY(-100%)';
+            } else {
+                // Scrolling up
+                header.style.transform = 'translateY(0)';
+            }
+
+            lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+        });
+    </script>
+</body>
+
+</html>
